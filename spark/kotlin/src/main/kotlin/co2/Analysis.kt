@@ -4,8 +4,11 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions.coalesce
 import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.count
 import org.apache.spark.sql.functions.desc
+import org.apache.spark.sql.functions.lit
 import org.apache.spark.sql.functions.max
 import org.apache.spark.sql.functions.row_number
 import org.apache.spark.sql.functions.sum
@@ -29,6 +32,7 @@ fun main() {
         sectorYearStat(spark)
         val perSourceYear = sourceYearStat(spark)
         topSourcesStat(perSourceYear)
+        ownerYearStat(spark, perSourceYear)
     } finally {
         spark.stop()
     }
@@ -124,4 +128,40 @@ private fun topSourcesStat(perSourceYear: Dataset<Row>) {
 
     top.writeTable("analysis_top_sources")
     println("-> wrote analysis_top_sources (${top.count()} rows)")
+}
+
+/**
+ * CO2 attributed to the controlling parent company -> analysis_owner_year.
+ * "Controlling parent" = the ownership-path entry with the highest
+ * overall_share_percent for that source (nulls treated as 0, so a named share
+ * wins; ties broken by name). Each source's full annual emissions are credited
+ * to that one company, then summed per owner per year. Only sources that have
+ * an ownership record are included.
+ */
+private fun ownerYearStat(spark: SparkSession, perSourceYear: Dataset<Row>) {
+    val byShare = Window.partitionBy("source_id")
+        .orderBy(coalesce(col("overall_share_percent"), lit(0.0)).desc(), col("parent_name"))
+    val controlling = spark.readTable("emissions_sources_ownership")
+        .filter(col("parent_name").isNotNull())
+        .select(col("source_id"), col("parent_name"), col("overall_share_percent"))
+        .withColumn("rn", row_number().over(byShare))
+        .filter(col("rn").equalTo(1))
+        .select(col("source_id"), col("parent_name").alias("owner"))
+
+    val ownerYear = perSourceYear
+        .join(controlling, "source_id")
+        .groupBy(col("owner"), col("year"))
+        .agg(
+            sum("emissions_quantity").alias("emissions_quantity"),
+            count("source_id").cast("int").alias("source_count"),
+        )
+
+    val latestYear = ownerYear.agg(max("year")).first().get(0)
+    println("=== Top 10 owners by CO2, $latestYear ===")
+    ownerYear.filter(col("year").equalTo(latestYear))
+        .orderBy(desc("emissions_quantity"))
+        .show(10, false)
+
+    ownerYear.writeTable("analysis_owner_year")
+    println("-> wrote analysis_owner_year (${ownerYear.count()} rows)")
 }

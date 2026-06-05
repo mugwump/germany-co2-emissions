@@ -136,3 +136,13 @@ CREATE TABLE IF NOT EXISTS analysis_top_sources (
   emissions_quantity double,
   PRIMARY KEY ((subsector, year), rank)
 );
+
+--    CO2 attributed to the controlling parent company (highest ownership share),
+--    summed per owner per year. One partition per year -> "owners in year Y".
+CREATE TABLE IF NOT EXISTS analysis_owner_year (
+  year               int,
+  owner              text,
+  emissions_quantity double,
+  source_count       int,
+  PRIMARY KEY ((year), owner)
+);

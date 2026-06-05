@@ -96,12 +96,20 @@ erDiagram
         int rank PK
         bigint source_id
     }
+    analysis_owner_year {
+        int year PK
+        text owner PK
+        double emissions_quantity
+        int source_count
+    }
 
     country_emissions   ||--o{ analysis_sector_year : "Spark sum by sector/year"
     emissions_sources   ||--o{ emissions_sources_confidence : "same source-month"
     emissions_sources   ||--o{ emissions_sources_ownership : "by source_id"
     emissions_sources   ||--o{ analysis_source_year : "Spark annual rollup"
     analysis_source_year ||--o{ analysis_top_sources : "ranked top-20"
+    analysis_source_year     ||--o{ analysis_owner_year : "by controlling parent"
+    emissions_sources_ownership ||--o{ analysis_owner_year : "highest-share parent"
 ```
 
 ### Frontend type-safety flow
@@ -153,7 +161,8 @@ docker compose run --rm loader python load.py --types ownership,emissions_source
 
 ### 3. Run the Spark analysis
 A **Kotlin** job (`spark/kotlin/`, native Spark Java API) populates
-`analysis_sector_year`, `analysis_source_year`, `analysis_top_sources`.
+`analysis_sector_year`, `analysis_source_year`, `analysis_top_sources`, and
+`analysis_owner_year` (CO₂ by controlling parent company).
 First compile it to a jar (one-shot Gradle build), then submit:
 ```bash
 # build spark/kotlin/build/libs/analysis.jar
