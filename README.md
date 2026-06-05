@@ -2,6 +2,19 @@
 
 Cassandra + Spark + Node/OpenAPI API + (TanStack Start) React, all via Docker.
 
+## Dashboard
+
+**Overview** — CO₂ emissions by sector over time, plus a selectable year's
+sector share:
+
+![Overview tab — stacked area chart and donut breakdown](docs/screenshots/overview.png)
+
+**Facilities** — sector / subsector / year pickers driving a facility bubble
+map, a top-emitters table, and a corporate-ownership drill-down (here: Neurath
+power station → RWE, with its Qatari and BlackRock shareholders):
+
+![Facilities tab — map, top emitters, ownership](docs/screenshots/facilities.png)
+
 ## Architecture
 
 ### System / deployment
