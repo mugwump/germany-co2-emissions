@@ -1,0 +1,89 @@
+services:
+  cassandra:
+    image: cassandra:4.1
+    container_name: co2-cassandra
+    ports:
+      - "9042:9042"          # CQL native transport (host access for tools)
+    environment:
+      - CASSANDRA_CLUSTER_NAME=co2
+      - MAX_HEAP_SIZE=2G
+      - HEAP_NEWSIZE=400M
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    healthcheck:
+      # cqlsh exits 0 only once CQL is actually accepting queries
+      test: ["CMD-SHELL", "cqlsh -e 'describe keyspaces' >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+
+  # One-shot: applies schema, then loads CSVs. Exits when done.
+  loader:
+    build: ./loader
+    container_name: co2-loader
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    environment:
+      - CASSANDRA_HOST=cassandra
+      - DATA_ROOT=/data/DEU/DATA
+      - SCHEMA_FILE=/schema/schema.cql
+    volumes:
+      - ./DEU:/data/DEU:ro
+      - ./cassandra:/schema:ro
+    # Override at runtime, e.g.:
+    #   docker compose run --rm loader python load.py --types country_emissions
+    command: ["python", "load.py", "--apply-schema", "--types", "country_emissions"]
+
+  api:
+    build: ./api
+    container_name: co2-api
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - CASSANDRA_HOST=cassandra
+      - PORT=8080
+
+  web:
+    build: ./web
+    container_name: co2-web
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - VITE_USE_POLLING=1
+    # Dev mode: bind-mount the source for hot reload, but keep the image's
+    # Linux node_modules (anonymous volume shadows the host's copy).
+    # claude-config persists Claude Code's login/settings across recreates.
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+      - claude-config:/root/.claude
+    command: ["npm", "run", "dev"]
+
+  spark:
+    image: apache/spark:3.5.3
+    container_name: co2-spark
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    environment:
+      - CASSANDRA_HOST=cassandra
+    volumes:
+      - ./spark/jobs:/jobs:ro
+    # Idle by default; run a job with:
+    #   docker compose run --rm spark /opt/spark/bin/spark-submit \
+    #     --packages com.datastax.spark:spark-cassandra-connector_2.12:3.5.1 \
+    #     --conf spark.jars.ivy=/tmp/.ivy /jobs/analysis.py
+    entrypoint: [""]
+    command: ["tail", "-f", "/dev/null"]
+
+volumes:
+  cassandra-data:
+  claude-config:

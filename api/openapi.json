@@ -1,0 +1,411 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "CO2 Emissions API (DEU, Climate TRACE)",
+        "version": "0.1.0"
+    },
+    "components": {
+        "schemas": {}
+    },
+    "paths": {
+        "/health": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Default Response"
+                    }
+                }
+            }
+        },
+        "/sectors": {
+            "get": {
+                "operationId": "listSectors",
+                "tags": [
+                    "meta"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "sectors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "sectors"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sectors/timeseries": {
+            "get": {
+                "operationId": "sectorTimeseries",
+                "tags": [
+                    "analysis"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "year": {
+                                                        "type": "integer"
+                                                    },
+                                                    "sector": {
+                                                        "type": "string"
+                                                    },
+                                                    "emissions_quantity": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "year",
+                                                    "sector",
+                                                    "emissions_quantity"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sectors/{sector}/subsectors": {
+            "get": {
+                "operationId": "sectorSubsectors",
+                "tags": [
+                    "analysis"
+                ],
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string"
+                        },
+                        "in": "path",
+                        "name": "sector",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "subsector": {
+                                                        "type": "string"
+                                                    },
+                                                    "year": {
+                                                        "type": "integer"
+                                                    },
+                                                    "emissions_quantity": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "subsector",
+                                                    "year",
+                                                    "emissions_quantity"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subsectors/{subsector}/top": {
+            "get": {
+                "operationId": "topSources",
+                "tags": [
+                    "analysis"
+                ],
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "in": "query",
+                        "name": "year",
+                        "required": true
+                    },
+                    {
+                        "schema": {
+                            "type": "string"
+                        },
+                        "in": "path",
+                        "name": "subsector",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "source_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "source_name": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "lat": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "lon": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "emissions_quantity": {
+                                                        "type": "number"
+                                                    },
+                                                    "rank": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "source_id",
+                                                    "source_name",
+                                                    "lat",
+                                                    "lon",
+                                                    "emissions_quantity",
+                                                    "rank"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subsectors/{subsector}/sources": {
+            "get": {
+                "operationId": "subsectorSources",
+                "tags": [
+                    "analysis"
+                ],
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "in": "query",
+                        "name": "year",
+                        "required": true
+                    },
+                    {
+                        "schema": {
+                            "type": "string"
+                        },
+                        "in": "path",
+                        "name": "subsector",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "source_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "source_name": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "lat": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "lon": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "emissions_quantity": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "source_id",
+                                                    "source_name",
+                                                    "lat",
+                                                    "lon",
+                                                    "emissions_quantity"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subsectors/{subsector}/sources/{sourceId}/ownership": {
+            "get": {
+                "operationId": "sourceOwnership",
+                "tags": [
+                    "analysis"
+                ],
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string"
+                        },
+                        "in": "path",
+                        "name": "subsector",
+                        "required": true
+                    },
+                    {
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "in": "path",
+                        "name": "sourceId",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "parent_name": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "parent_entity_type": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "parent_registration_country": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "overall_share_percent": {
+                                                        "type": "number",
+                                                        "nullable": true
+                                                    },
+                                                    "immediate_source_owner": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "ownership_path": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "required": [
+                                                    "parent_name",
+                                                    "parent_entity_type",
+                                                    "parent_registration_country",
+                                                    "overall_share_percent",
+                                                    "immediate_source_owner",
+                                                    "ownership_path"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080"
+        }
+    ]
+}
