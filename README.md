@@ -152,12 +152,21 @@ docker compose run --rm loader python load.py --types ownership,emissions_source
 ```
 
 ### 3. Run the Spark analysis
-Populates `analysis_sector_year`, `analysis_source_year`, `analysis_top_sources`.
+A **Kotlin** job (`spark/kotlin/`, native Spark Java API) populates
+`analysis_sector_year`, `analysis_source_year`, `analysis_top_sources`.
+First compile it to a jar (one-shot Gradle build), then submit:
 ```bash
+# build spark/kotlin/build/libs/analysis.jar
+docker compose run --rm spark-build
+
+# submit it
 docker compose run --rm --entrypoint "" spark /opt/spark/bin/spark-submit \
   --packages com.datastax.spark:spark-cassandra-connector_2.12:3.5.1 \
-  --conf spark.jars.ivy=/tmp/.ivy /jobs/analysis.py
+  --conf spark.jars.ivy=/tmp/.ivy --class co2.AnalysisKt /jars/analysis.jar
 ```
+> Built with Kotlin → JVM 11 bytecode (the `apache/spark:3.5.3` image runs
+> Java 11). Spark itself is `compileOnly`; only our code + kotlin-stdlib are in
+> the jar, and the Cassandra connector comes via `--packages`.
 
 ### 4. Start the API
 ```bash

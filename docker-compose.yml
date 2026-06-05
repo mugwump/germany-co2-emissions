@@ -67,6 +67,17 @@ services:
       - claude-config:/root/.claude
     command: ["npm", "run", "dev"]
 
+  # One-shot: compiles the Kotlin Spark job into spark/kotlin/build/libs/analysis.jar.
+  #   docker compose run --rm spark-build
+  spark-build:
+    image: gradle:8.7-jdk17
+    container_name: co2-spark-build
+    working_dir: /home/gradle/project
+    volumes:
+      - ./spark/kotlin:/home/gradle/project
+      - gradle-cache:/home/gradle/.gradle
+    command: ["gradle", "--no-daemon", "shadowJar"]
+
   spark:
     image: apache/spark:3.5.3
     container_name: co2-spark
@@ -76,14 +87,15 @@ services:
     environment:
       - CASSANDRA_HOST=cassandra
     volumes:
-      - ./spark/jobs:/jobs:ro
-    # Idle by default; run a job with:
+      - ./spark/kotlin/build/libs:/jars:ro
+    # Idle by default. Build the jar first (spark-build), then submit it:
     #   docker compose run --rm spark /opt/spark/bin/spark-submit \
     #     --packages com.datastax.spark:spark-cassandra-connector_2.12:3.5.1 \
-    #     --conf spark.jars.ivy=/tmp/.ivy /jobs/analysis.py
+    #     --conf spark.jars.ivy=/tmp/.ivy --class co2.AnalysisKt /jars/analysis.jar
     entrypoint: [""]
     command: ["tail", "-f", "/dev/null"]
 
 volumes:
   cassandra-data:
   claude-config:
+  gradle-cache:

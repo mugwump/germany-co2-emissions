@@ -23,3 +23,7 @@ DEU/DATA/
 
 # Spark ivy cache (if ever run on host)
 .ivy/
+
+# Gradle (Kotlin Spark job build)
+.gradle/
+spark/kotlin/build/
