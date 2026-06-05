@@ -32,4 +32,11 @@ await page.waitForTimeout(1500);
 await page.screenshot({ path: `${OUT}/facilities.png`, fullPage: true });
 console.log("wrote facilities.png");
 
+// --- Owners tab: top controlling parents by CO2 ---
+await page.getByRole("tab", { name: "Owners" }).click();
+await page.waitForSelector(".recharts-bar-rectangle", { timeout: 30000 });
+await page.waitForTimeout(1500);
+await page.screenshot({ path: `${OUT}/owners.png`, fullPage: true });
+console.log("wrote owners.png");
+
 await browser.close();
