@@ -37,6 +37,11 @@ const OwnerRow = z.object({
   emissions_quantity: z.number(),
   source_count: z.number().int(),
 });
+const OwnerTrendPoint = z.object({
+  year: z.number().int(),
+  emissions_quantity: z.number(),
+  source_count: z.number().int(),
+});
 
 const num = (v: unknown): number => (v == null ? 0 : Number(v));
 
@@ -87,6 +92,32 @@ export async function emissionsRoutes(app: FastifyInstance) {
       .sort((a, b) => b.emissions_quantity - a.emissions_quantity)
       .slice(0, limit ?? 25);
     return { data };
+  });
+
+  // One owner's CO2 over time (single-partition read) — "did they reduce?".
+  r.get("/owners/:owner/trend", {
+    schema: {
+      tags: ["analysis"],
+      operationId: "ownerTrend",
+      params: z.object({ owner: z.string() }),
+      response: {
+        200: z.object({ owner: z.string(), data: z.array(OwnerTrendPoint) }),
+      },
+    },
+  }, async (req) => {
+    const { owner } = req.params;
+    const rs = await cassandra.execute(
+      "SELECT year, emissions_quantity, source_count FROM analysis_owner_trend WHERE owner = ?",
+      [owner], { prepare: true },
+    );
+    const data = rs.rows
+      .map((x) => ({
+        year: x.year as number,
+        emissions_quantity: num(x.emissions_quantity),
+        source_count: Number(x.source_count),
+      }))
+      .sort((a, b) => a.year - b.year);
+    return { owner, data };
   });
 
   // Sector totals per year (Spark rollup) — for the stacked time-series.

@@ -118,6 +118,69 @@
                 }
             }
         },
+        "/owners/{owner}/trend": {
+            "get": {
+                "operationId": "ownerTrend",
+                "tags": [
+                    "analysis"
+                ],
+                "parameters": [
+                    {
+                        "schema": {
+                            "type": "string"
+                        },
+                        "in": "path",
+                        "name": "owner",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Default Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "owner": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "year": {
+                                                        "type": "integer"
+                                                    },
+                                                    "emissions_quantity": {
+                                                        "type": "number"
+                                                    },
+                                                    "source_count": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "year",
+                                                    "emissions_quantity",
+                                                    "source_count"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "owner",
+                                        "data"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/sectors/timeseries": {
             "get": {
                 "operationId": "sectorTimeseries",

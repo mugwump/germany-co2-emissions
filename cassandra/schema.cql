@@ -146,3 +146,13 @@ CREATE TABLE IF NOT EXISTS analysis_owner_year (
   source_count       int,
   PRIMARY KEY ((year), owner)
 );
+
+--    Same data keyed by owner -> one company's full time series in a single
+--    partition read ("did this owner reduce emissions over time?").
+CREATE TABLE IF NOT EXISTS analysis_owner_trend (
+  owner              text,
+  year               int,
+  emissions_quantity double,
+  source_count       int,
+  PRIMARY KEY ((owner), year)
+);

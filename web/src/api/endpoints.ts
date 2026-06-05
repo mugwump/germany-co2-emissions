@@ -43,6 +43,17 @@ export type TopOwners200 = {
   data: TopOwners200DataItem[];
 };
 
+export type OwnerTrend200DataItem = {
+  year: number;
+  emissions_quantity: number;
+  source_count: number;
+};
+
+export type OwnerTrend200 = {
+  owner: string;
+  data: OwnerTrend200DataItem[];
+};
+
 export type SectorTimeseries200DataItem = {
   year: number;
   sector: string;
@@ -441,6 +452,113 @@ export function useTopOwners<TData = Awaited<ReturnType<typeof topOwners>>, TErr
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getTopOwnersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export type ownerTrendResponse200 = {
+  data: OwnerTrend200
+  status: 200
+}
+
+export type ownerTrendResponseSuccess = (ownerTrendResponse200) & {
+  headers: Headers;
+};
+;
+
+export type ownerTrendResponse = (ownerTrendResponseSuccess)
+
+export const getOwnerTrendUrl = (owner: string,) => {
+
+
+
+
+  return `/owners/${owner}/trend`
+}
+
+export const ownerTrend = async (owner: string, options?: RequestInit): Promise<ownerTrendResponse> => {
+
+  return customFetch<ownerTrendResponse>(getOwnerTrendUrl(owner),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getOwnerTrendQueryKey = (owner: string,) => {
+    return [
+    `/owners/${owner}/trend`
+    ] as const;
+    }
+
+
+export const getOwnerTrendQueryOptions = <TData = Awaited<ReturnType<typeof ownerTrend>>, TError = unknown>(owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getOwnerTrendQueryKey(owner);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof ownerTrend>>> = ({ signal }) => ownerTrend(owner, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: owner !== null && owner !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type OwnerTrendQueryResult = NonNullable<Awaited<ReturnType<typeof ownerTrend>>>
+export type OwnerTrendQueryError = unknown
+
+
+export function useOwnerTrend<TData = Awaited<ReturnType<typeof ownerTrend>>, TError = unknown>(
+ owner: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof ownerTrend>>,
+          TError,
+          Awaited<ReturnType<typeof ownerTrend>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useOwnerTrend<TData = Awaited<ReturnType<typeof ownerTrend>>, TError = unknown>(
+ owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof ownerTrend>>,
+          TError,
+          Awaited<ReturnType<typeof ownerTrend>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useOwnerTrend<TData = Awaited<ReturnType<typeof ownerTrend>>, TError = unknown>(
+ owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useOwnerTrend<TData = Awaited<ReturnType<typeof ownerTrend>>, TError = unknown>(
+ owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getOwnerTrendQueryOptions(owner,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

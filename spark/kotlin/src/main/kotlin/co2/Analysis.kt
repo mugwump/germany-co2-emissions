@@ -163,5 +163,7 @@ private fun ownerYearStat(spark: SparkSession, perSourceYear: Dataset<Row>) {
         .show(10, false)
 
     ownerYear.writeTable("analysis_owner_year")
-    println("-> wrote analysis_owner_year (${ownerYear.count()} rows)")
+    // Same rows keyed by owner -> per-company time series (single-partition read).
+    ownerYear.writeTable("analysis_owner_trend")
+    println("-> wrote analysis_owner_year / analysis_owner_trend (${ownerYear.count()} rows)")
 }

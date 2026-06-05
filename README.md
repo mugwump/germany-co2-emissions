@@ -16,9 +16,11 @@ power station → RWE, with its Qatari and BlackRock shareholders):
 ![Facilities tab — map, top emitters, ownership](docs/screenshots/facilities.png)
 
 **Owners** — CO₂ attributed to each facility's controlling parent company,
-ranked for a selectable year (RWE, EP Group/LEAG, thyssenkrupp, …):
+ranked for a selectable year (RWE, EP Group/LEAG, thyssenkrupp, …). Click any
+company to chart its emissions over time and see who actually reduced (green =
+net cut; 2026 excluded as a partial year):
 
-![Owners tab — top controlling parents by CO₂](docs/screenshots/owners.png)
+![Owners tab — top controlling parents + emissions-over-time trend](docs/screenshots/owners.png)
 
 ## Architecture
 
