@@ -2,10 +2,106 @@
 
 Cassandra + Spark + Node/OpenAPI API + (TanStack Start) React, all via Docker.
 
+## Architecture
+
+### System / deployment
+
+Five Docker services on one network. The browser is served by `web` (SSR) and
+fetches data directly from the `api`; the heavy ingest and analytics happen
+out-of-band against Cassandra.
+
+```mermaid
+flowchart LR
+    csv[("DEU/DATA<br/>CSV files (4.8 GB)")]
+    browser(["Browser"])
+
+    subgraph compose["docker compose network"]
+        loader["loader<br/>(Python, cassandra-driver)<br/>one-shot"]
+        cass[("cassandra :9042<br/>keyspace climate_trace")]
+        spark["spark<br/>(apache/spark 3.5<br/>+ cassandra connector)"]
+        api["api :8080<br/>(Fastify + zod + swagger)"]
+        web["web :3000<br/>(TanStack Start, vite dev)"]
+    end
+
+    csv -->|stream rows| loader -->|CQL INSERT| cass
+    spark <-->|read raw / write analysis_*| cass
+    api -->|CQL SELECT| cass
+    web -->|SSR HTML| browser
+    browser -->|HTTP + JSON| api
 ```
-DEU/DATA/*.csv ──[loader]──▶ Cassandra ──[spark]──▶ analysis_* tables
-                                 │                        │
-                                 └──────[Node API]────────┘──▶ React (TanStack Start)
+
+### Data model & flow
+
+Tables are query-driven (partition keys match read patterns). The loader fills
+the raw tables; Spark rolls them up into the `analysis_*` tables the API serves.
+
+```mermaid
+erDiagram
+    country_emissions {
+        text iso3_country PK
+        text sector PK
+        text subsector PK
+        int year PK
+        text gas PK
+        double emissions_quantity
+    }
+    emissions_sources {
+        text subsector PK
+        bigint source_id PK
+        timestamp start_time PK
+        double lat
+        double lon
+        double emissions_quantity
+        map other
+    }
+    emissions_sources_confidence {
+        text subsector PK
+        bigint source_id PK
+        timestamp start_time PK
+    }
+    emissions_sources_ownership {
+        text source_subsector PK
+        bigint source_id PK
+        text parent_entity_id PK
+        double overall_share_percent
+    }
+    analysis_sector_year {
+        text iso3_country PK
+        int year PK
+        text sector PK
+        double emissions_quantity
+    }
+    analysis_source_year {
+        text subsector PK
+        int year PK
+        bigint source_id PK
+        double emissions_quantity
+    }
+    analysis_top_sources {
+        text subsector PK
+        int year PK
+        int rank PK
+        bigint source_id
+    }
+
+    country_emissions   ||--o{ analysis_sector_year : "Spark sum by sector/year"
+    emissions_sources   ||--o{ emissions_sources_confidence : "same source-month"
+    emissions_sources   ||--o{ emissions_sources_ownership : "by source_id"
+    emissions_sources   ||--o{ analysis_source_year : "Spark annual rollup"
+    analysis_source_year ||--o{ analysis_top_sources : "ranked top-20"
+```
+
+### Frontend type-safety flow
+
+The API is the single source of the contract: its OpenAPI doc generates the
+client the React app uses, so types flow end-to-end.
+
+```mermaid
+flowchart LR
+    fastify["Fastify routes<br/>(zod schemas)"] -->|"@fastify/swagger"| spec["openapi.json<br/>(OpenAPI 3.0.3)"]
+    spec -->|orval| hooks["TanStack Query hooks<br/>src/api/endpoints.ts"]
+    hooks --> comp["React components<br/>(Recharts + Leaflet)"]
+    comp -->|fetch via customFetch| fastify
 ```
 
 ## Data
