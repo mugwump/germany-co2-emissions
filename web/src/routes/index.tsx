@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { SectorTimeseries } from "#/components/SectorTimeseries";
 import { SectorBreakdown } from "#/components/SectorBreakdown";
 import { FacilityExplorer } from "#/components/FacilityExplorer";
+import { TopOwners } from "#/components/TopOwners";
 
 export const Route = createFileRoute("/")({ component: Dashboard });
 
@@ -22,6 +23,7 @@ function Dashboard() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="facilities">Facilities</TabsTrigger>
+          <TabsTrigger value="owners">Owners</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -33,6 +35,10 @@ function Dashboard() {
 
         <TabsContent value="facilities">
           <FacilityExplorer />
+        </TabsContent>
+
+        <TabsContent value="owners">
+          <TopOwners />
         </TabsContent>
       </Tabs>
     </div>

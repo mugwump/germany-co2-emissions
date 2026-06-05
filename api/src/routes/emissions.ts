@@ -32,6 +32,11 @@ const OwnershipRow = z.object({
   immediate_source_owner: z.string().nullable(),
   ownership_path: z.string().nullable(),
 });
+const OwnerRow = z.object({
+  owner: z.string(),
+  emissions_quantity: z.number(),
+  source_count: z.number().int(),
+});
 
 const num = (v: unknown): number => (v == null ? 0 : Number(v));
 
@@ -54,6 +59,34 @@ export async function emissionsRoutes(app: FastifyInstance) {
       .map((x) => x.sector as string)
       .sort();
     return { sectors };
+  });
+
+  // Top CO2-emitting owners (controlling parent) for a year (Spark rollup).
+  r.get("/owners", {
+    schema: {
+      tags: ["analysis"],
+      operationId: "topOwners",
+      querystring: z.object({
+        year: z.coerce.number().int(),
+        limit: z.coerce.number().int().min(1).max(200).optional(),
+      }),
+      response: { 200: z.object({ data: z.array(OwnerRow) }) },
+    },
+  }, async (req) => {
+    const { year, limit } = req.query;
+    const rs = await cassandra.execute(
+      "SELECT owner, emissions_quantity, source_count FROM analysis_owner_year WHERE year = ?",
+      [year], { prepare: true },
+    );
+    const data = rs.rows
+      .map((x) => ({
+        owner: x.owner as string,
+        emissions_quantity: num(x.emissions_quantity),
+        source_count: Number(x.source_count),
+      }))
+      .sort((a, b) => b.emissions_quantity - a.emissions_quantity)
+      .slice(0, limit ?? 25);
+    return { data };
   });
 
   // Sector totals per year (Spark rollup) — for the stacked time-series.
