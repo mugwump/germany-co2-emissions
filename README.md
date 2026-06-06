@@ -148,6 +148,19 @@ facility sources (monthly), confidence, ownership.
 
 Docker + Docker Compose. The `DEU/` data folder in the repo root.
 
+## Quick start
+
+A `Makefile` wraps the whole pipeline. With Docker running and `DEU/` in place:
+
+```bash
+make all     # cassandra -> load -> spark analysis -> api -> web
+# then open http://localhost:3000   (API docs at http://localhost:8080/docs)
+```
+
+Individual stages: `make up`, `make load`, `make analyze`, `make api`, `make web`.
+`make down` stops everything; `make clean` also wipes the loaded database.
+The manual equivalents are documented step by step below.
+
 ## Steps
 
 ### 1. Start Cassandra
