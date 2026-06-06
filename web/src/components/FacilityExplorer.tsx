@@ -74,7 +74,7 @@ export function FacilityExplorer() {
   useEffect(() => setClient(true), []);
 
   const sectorsQ = useListSectors();
-  const sectors = sectorsQ.data?.sectors ?? [];
+  const sectors = sectorsQ.data?.data?.sectors ?? [];
 
   const subsectorsQ = useSectorSubsectors(sector, {
     query: { enabled: !!sector },
@@ -82,7 +82,7 @@ export function FacilityExplorer() {
   const subsectors = useMemo(
     () =>
       Array.from(
-        new Set((subsectorsQ.data?.data ?? []).map((d) => d.subsector)),
+        new Set((subsectorsQ.data?.data?.data ?? []).map((d) => d.subsector)),
     ).sort(),
     [subsectorsQ.data],
   );
@@ -93,8 +93,8 @@ export function FacilityExplorer() {
     query: { enabled: selected != null },
   });
 
-  const top = topQ.data?.data ?? [];
-  const points = sourcesQ.data?.data ?? [];
+  const top = topQ.data?.data?.data ?? [];
+  const points = sourcesQ.data?.data?.data ?? [];
 
   function onSectorChange(s: string) {
     setSector(s);
@@ -191,11 +191,11 @@ export function FacilityExplorer() {
           <CardContent>
             {ownershipQ.isLoading ? (
               <p className="text-muted-foreground">Loading…</p>
-            ) : (ownershipQ.data?.data ?? []).length === 0 ? (
+            ) : (ownershipQ.data?.data?.data ?? []).length === 0 ? (
               <p className="text-muted-foreground">No ownership records.</p>
             ) : (
               <div className="space-y-3">
-                {(ownershipQ.data?.data ?? []).map((o, i) => (
+                {(ownershipQ.data?.data?.data ?? []).map((o, i) => (
                   <div key={i} className="rounded-md border p-3">
                     <div className="flex items-center gap-2">
                       <strong>{o.parent_name ?? "Unknown"}</strong>

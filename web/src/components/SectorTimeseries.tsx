@@ -17,7 +17,7 @@ export function SectorTimeseries() {
   const { data, isLoading } = useSectorTimeseries();
 
   const { rows, sectors } = useMemo(() => {
-    const items = data?.data ?? [];
+    const items = data?.data?.data ?? [];
     const sectorSet = Array.from(new Set(items.map((d) => d.sector))).sort();
     const byYear = new Map<number, Record<string, number>>();
     for (const it of items) {

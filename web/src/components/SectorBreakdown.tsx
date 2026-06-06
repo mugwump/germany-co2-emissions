@@ -16,7 +16,7 @@ export function SectorBreakdown() {
   const [year, setYear] = useState<number>(2023);
 
   const { years, sectors, slices, total } = useMemo(() => {
-    const items = data?.data ?? [];
+    const items = data?.data?.data ?? [];
     const years = Array.from(new Set(items.map((d) => d.year))).sort(
       (a, b) => a - b,
     );

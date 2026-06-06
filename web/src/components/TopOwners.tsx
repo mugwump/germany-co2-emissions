@@ -31,7 +31,7 @@ const PARTIAL_YEAR = 2026; // incomplete — excluded from trend so it isn't rea
 export function TopOwners() {
   const [year, setYear] = useState(2023);
   const { data, isLoading } = useTopOwners({ year, limit: 15 });
-  const rows = data?.data ?? [];
+  const rows = data?.data?.data ?? [];
 
   // Owners chosen for the trend comparison; default to the top 3 once, then
   // the user toggles via the bars.
@@ -64,7 +64,7 @@ export function TopOwners() {
     trendQueries.forEach((q, i) => {
       const owner = selected[i];
       if (!owner) return;
-      const points = (q.data?.data ?? []).filter((p) => p.year !== PARTIAL_YEAR);
+      const points = (q.data?.data?.data ?? []).filter((p) => p.year !== PARTIAL_YEAR);
       const color = LINE_COLORS[i % LINE_COLORS.length];
       let change: number | null = null;
       if (points.length >= 2) {

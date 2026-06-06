@@ -19,7 +19,6 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
-import { customFetch } from './fetcher';
 export type ListSectors200 = {
   sectors: string[];
 };
@@ -132,10 +131,6 @@ export type SourceOwnership200 = {
   data: SourceOwnership200DataItem[];
 };
 
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
-
 export type getHealthResponse200 = {
   data: void
   status: 200
@@ -153,19 +148,26 @@ export const getGetHealthUrl = () => {
 
 
 
-  return `/health`
+  return `http://localhost:8080/health`
 }
 
 export const getHealth = async ( options?: RequestInit): Promise<getHealthResponse> => {
 
-  return customFetch<getHealthResponse>(getGetHealthUrl(),
+  const res = await fetch(getGetHealthUrl(),
   {
     ...options,
     method: 'GET'
 
 
   }
-);}
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getHealthResponse['data'] = body ? JSON.parse(body) : undefined
+  return { data, status: res.status, headers: res.headers } as getHealthResponse
+}
 
 
 
@@ -178,16 +180,16 @@ export const getGetHealthQueryKey = () => {
     }
 
 
-export const getGetHealthQueryOptions = <TData = Awaited<ReturnType<typeof getHealth>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealth>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetHealthQueryOptions = <TData = Awaited<ReturnType<typeof getHealth>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealth>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetHealthQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHealth>>> = ({ signal }) => getHealth({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHealth>>> = ({ signal }) => getHealth({ signal, ...fetchOptions });
 
 
 
@@ -207,7 +209,7 @@ export function useGetHealth<TData = Awaited<ReturnType<typeof getHealth>>, TErr
           TError,
           Awaited<ReturnType<typeof getHealth>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetHealth<TData = Awaited<ReturnType<typeof getHealth>>, TError = unknown>(
@@ -217,16 +219,16 @@ export function useGetHealth<TData = Awaited<ReturnType<typeof getHealth>>, TErr
           TError,
           Awaited<ReturnType<typeof getHealth>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetHealth<TData = Awaited<ReturnType<typeof getHealth>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealth>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealth>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetHealth<TData = Awaited<ReturnType<typeof getHealth>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealth>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealth>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -260,19 +262,26 @@ export const getListSectorsUrl = () => {
 
 
 
-  return `/sectors`
+  return `http://localhost:8080/sectors`
 }
 
 export const listSectors = async ( options?: RequestInit): Promise<listSectorsResponse> => {
 
-  return customFetch<listSectorsResponse>(getListSectorsUrl(),
+  const res = await fetch(getListSectorsUrl(),
   {
     ...options,
     method: 'GET'
 
 
   }
-);}
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: listSectorsResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listSectorsResponse
+}
 
 
 
@@ -285,16 +294,16 @@ export const getListSectorsQueryKey = () => {
     }
 
 
-export const getListSectorsQueryOptions = <TData = Awaited<ReturnType<typeof listSectors>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSectors>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getListSectorsQueryOptions = <TData = Awaited<ReturnType<typeof listSectors>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSectors>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getListSectorsQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSectors>>> = ({ signal }) => listSectors({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSectors>>> = ({ signal }) => listSectors({ signal, ...fetchOptions });
 
 
 
@@ -314,7 +323,7 @@ export function useListSectors<TData = Awaited<ReturnType<typeof listSectors>>, 
           TError,
           Awaited<ReturnType<typeof listSectors>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListSectors<TData = Awaited<ReturnType<typeof listSectors>>, TError = unknown>(
@@ -324,16 +333,16 @@ export function useListSectors<TData = Awaited<ReturnType<typeof listSectors>>, 
           TError,
           Awaited<ReturnType<typeof listSectors>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListSectors<TData = Awaited<ReturnType<typeof listSectors>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSectors>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSectors>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useListSectors<TData = Awaited<ReturnType<typeof listSectors>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSectors>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSectors>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -374,19 +383,26 @@ export const getTopOwnersUrl = (params: TopOwnersParams,) => {
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/owners?${stringifiedParams}` : `/owners`
+  return stringifiedParams.length > 0 ? `http://localhost:8080/owners?${stringifiedParams}` : `http://localhost:8080/owners`
 }
 
 export const topOwners = async (params: TopOwnersParams, options?: RequestInit): Promise<topOwnersResponse> => {
 
-  return customFetch<topOwnersResponse>(getTopOwnersUrl(params),
+  const res = await fetch(getTopOwnersUrl(params),
   {
     ...options,
     method: 'GET'
 
 
   }
-);}
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: topOwnersResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as topOwnersResponse
+}
 
 
 
@@ -399,16 +415,16 @@ export const getTopOwnersQueryKey = (params?: TopOwnersParams,) => {
     }
 
 
-export const getTopOwnersQueryOptions = <TData = Awaited<ReturnType<typeof topOwners>>, TError = unknown>(params: TopOwnersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topOwners>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getTopOwnersQueryOptions = <TData = Awaited<ReturnType<typeof topOwners>>, TError = unknown>(params: TopOwnersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topOwners>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getTopOwnersQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof topOwners>>> = ({ signal }) => topOwners(params, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof topOwners>>> = ({ signal }) => topOwners(params, { signal, ...fetchOptions });
 
 
 
@@ -428,7 +444,7 @@ export function useTopOwners<TData = Awaited<ReturnType<typeof topOwners>>, TErr
           TError,
           Awaited<ReturnType<typeof topOwners>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useTopOwners<TData = Awaited<ReturnType<typeof topOwners>>, TError = unknown>(
@@ -438,16 +454,16 @@ export function useTopOwners<TData = Awaited<ReturnType<typeof topOwners>>, TErr
           TError,
           Awaited<ReturnType<typeof topOwners>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useTopOwners<TData = Awaited<ReturnType<typeof topOwners>>, TError = unknown>(
- params: TopOwnersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topOwners>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: TopOwnersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topOwners>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useTopOwners<TData = Awaited<ReturnType<typeof topOwners>>, TError = unknown>(
- params: TopOwnersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topOwners>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: TopOwnersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topOwners>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -481,19 +497,26 @@ export const getOwnerTrendUrl = (owner: string,) => {
 
 
 
-  return `/owners/${owner}/trend`
+  return `http://localhost:8080/owners/${owner}/trend`
 }
 
 export const ownerTrend = async (owner: string, options?: RequestInit): Promise<ownerTrendResponse> => {
 
-  return customFetch<ownerTrendResponse>(getOwnerTrendUrl(owner),
+  const res = await fetch(getOwnerTrendUrl(owner),
   {
     ...options,
     method: 'GET'
 
 
   }
-);}
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: ownerTrendResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as ownerTrendResponse
+}
 
 
 
@@ -506,16 +529,16 @@ export const getOwnerTrendQueryKey = (owner: string,) => {
     }
 
 
-export const getOwnerTrendQueryOptions = <TData = Awaited<ReturnType<typeof ownerTrend>>, TError = unknown>(owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getOwnerTrendQueryOptions = <TData = Awaited<ReturnType<typeof ownerTrend>>, TError = unknown>(owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getOwnerTrendQueryKey(owner);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof ownerTrend>>> = ({ signal }) => ownerTrend(owner, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof ownerTrend>>> = ({ signal }) => ownerTrend(owner, { signal, ...fetchOptions });
 
 
 
@@ -535,7 +558,7 @@ export function useOwnerTrend<TData = Awaited<ReturnType<typeof ownerTrend>>, TE
           TError,
           Awaited<ReturnType<typeof ownerTrend>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useOwnerTrend<TData = Awaited<ReturnType<typeof ownerTrend>>, TError = unknown>(
@@ -545,16 +568,16 @@ export function useOwnerTrend<TData = Awaited<ReturnType<typeof ownerTrend>>, TE
           TError,
           Awaited<ReturnType<typeof ownerTrend>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useOwnerTrend<TData = Awaited<ReturnType<typeof ownerTrend>>, TError = unknown>(
- owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useOwnerTrend<TData = Awaited<ReturnType<typeof ownerTrend>>, TError = unknown>(
- owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof ownerTrend>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -588,19 +611,26 @@ export const getSectorTimeseriesUrl = () => {
 
 
 
-  return `/sectors/timeseries`
+  return `http://localhost:8080/sectors/timeseries`
 }
 
 export const sectorTimeseries = async ( options?: RequestInit): Promise<sectorTimeseriesResponse> => {
 
-  return customFetch<sectorTimeseriesResponse>(getSectorTimeseriesUrl(),
+  const res = await fetch(getSectorTimeseriesUrl(),
   {
     ...options,
     method: 'GET'
 
 
   }
-);}
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: sectorTimeseriesResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as sectorTimeseriesResponse
+}
 
 
 
@@ -613,16 +643,16 @@ export const getSectorTimeseriesQueryKey = () => {
     }
 
 
-export const getSectorTimeseriesQueryOptions = <TData = Awaited<ReturnType<typeof sectorTimeseries>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorTimeseries>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getSectorTimeseriesQueryOptions = <TData = Awaited<ReturnType<typeof sectorTimeseries>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorTimeseries>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getSectorTimeseriesQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof sectorTimeseries>>> = ({ signal }) => sectorTimeseries({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof sectorTimeseries>>> = ({ signal }) => sectorTimeseries({ signal, ...fetchOptions });
 
 
 
@@ -642,7 +672,7 @@ export function useSectorTimeseries<TData = Awaited<ReturnType<typeof sectorTime
           TError,
           Awaited<ReturnType<typeof sectorTimeseries>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useSectorTimeseries<TData = Awaited<ReturnType<typeof sectorTimeseries>>, TError = unknown>(
@@ -652,16 +682,16 @@ export function useSectorTimeseries<TData = Awaited<ReturnType<typeof sectorTime
           TError,
           Awaited<ReturnType<typeof sectorTimeseries>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useSectorTimeseries<TData = Awaited<ReturnType<typeof sectorTimeseries>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorTimeseries>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorTimeseries>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useSectorTimeseries<TData = Awaited<ReturnType<typeof sectorTimeseries>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorTimeseries>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorTimeseries>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -695,19 +725,26 @@ export const getSectorSubsectorsUrl = (sector: string,) => {
 
 
 
-  return `/sectors/${sector}/subsectors`
+  return `http://localhost:8080/sectors/${sector}/subsectors`
 }
 
 export const sectorSubsectors = async (sector: string, options?: RequestInit): Promise<sectorSubsectorsResponse> => {
 
-  return customFetch<sectorSubsectorsResponse>(getSectorSubsectorsUrl(sector),
+  const res = await fetch(getSectorSubsectorsUrl(sector),
   {
     ...options,
     method: 'GET'
 
 
   }
-);}
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: sectorSubsectorsResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as sectorSubsectorsResponse
+}
 
 
 
@@ -720,16 +757,16 @@ export const getSectorSubsectorsQueryKey = (sector: string,) => {
     }
 
 
-export const getSectorSubsectorsQueryOptions = <TData = Awaited<ReturnType<typeof sectorSubsectors>>, TError = unknown>(sector: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorSubsectors>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getSectorSubsectorsQueryOptions = <TData = Awaited<ReturnType<typeof sectorSubsectors>>, TError = unknown>(sector: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorSubsectors>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getSectorSubsectorsQueryKey(sector);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof sectorSubsectors>>> = ({ signal }) => sectorSubsectors(sector, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof sectorSubsectors>>> = ({ signal }) => sectorSubsectors(sector, { signal, ...fetchOptions });
 
 
 
@@ -749,7 +786,7 @@ export function useSectorSubsectors<TData = Awaited<ReturnType<typeof sectorSubs
           TError,
           Awaited<ReturnType<typeof sectorSubsectors>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useSectorSubsectors<TData = Awaited<ReturnType<typeof sectorSubsectors>>, TError = unknown>(
@@ -759,16 +796,16 @@ export function useSectorSubsectors<TData = Awaited<ReturnType<typeof sectorSubs
           TError,
           Awaited<ReturnType<typeof sectorSubsectors>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useSectorSubsectors<TData = Awaited<ReturnType<typeof sectorSubsectors>>, TError = unknown>(
- sector: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorSubsectors>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ sector: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorSubsectors>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useSectorSubsectors<TData = Awaited<ReturnType<typeof sectorSubsectors>>, TError = unknown>(
- sector: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorSubsectors>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ sector: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sectorSubsectors>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -810,20 +847,27 @@ export const getTopSourcesUrl = (subsector: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/subsectors/${subsector}/top?${stringifiedParams}` : `/subsectors/${subsector}/top`
+  return stringifiedParams.length > 0 ? `http://localhost:8080/subsectors/${subsector}/top?${stringifiedParams}` : `http://localhost:8080/subsectors/${subsector}/top`
 }
 
 export const topSources = async (subsector: string,
     params: TopSourcesParams, options?: RequestInit): Promise<topSourcesResponse> => {
 
-  return customFetch<topSourcesResponse>(getTopSourcesUrl(subsector,params),
+  const res = await fetch(getTopSourcesUrl(subsector,params),
   {
     ...options,
     method: 'GET'
 
 
   }
-);}
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: topSourcesResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as topSourcesResponse
+}
 
 
 
@@ -838,16 +882,16 @@ export const getTopSourcesQueryKey = (subsector: string,
 
 
 export const getTopSourcesQueryOptions = <TData = Awaited<ReturnType<typeof topSources>>, TError = unknown>(subsector: string,
-    params: TopSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topSources>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+    params: TopSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topSources>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getTopSourcesQueryKey(subsector,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof topSources>>> = ({ signal }) => topSources(subsector,params, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof topSources>>> = ({ signal }) => topSources(subsector,params, { signal, ...fetchOptions });
 
 
 
@@ -868,7 +912,7 @@ export function useTopSources<TData = Awaited<ReturnType<typeof topSources>>, TE
           TError,
           Awaited<ReturnType<typeof topSources>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useTopSources<TData = Awaited<ReturnType<typeof topSources>>, TError = unknown>(
@@ -879,18 +923,18 @@ export function useTopSources<TData = Awaited<ReturnType<typeof topSources>>, TE
           TError,
           Awaited<ReturnType<typeof topSources>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useTopSources<TData = Awaited<ReturnType<typeof topSources>>, TError = unknown>(
  subsector: string,
-    params: TopSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topSources>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+    params: TopSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topSources>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useTopSources<TData = Awaited<ReturnType<typeof topSources>>, TError = unknown>(
  subsector: string,
-    params: TopSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topSources>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+    params: TopSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof topSources>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -932,20 +976,27 @@ export const getSubsectorSourcesUrl = (subsector: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/subsectors/${subsector}/sources?${stringifiedParams}` : `/subsectors/${subsector}/sources`
+  return stringifiedParams.length > 0 ? `http://localhost:8080/subsectors/${subsector}/sources?${stringifiedParams}` : `http://localhost:8080/subsectors/${subsector}/sources`
 }
 
 export const subsectorSources = async (subsector: string,
     params: SubsectorSourcesParams, options?: RequestInit): Promise<subsectorSourcesResponse> => {
 
-  return customFetch<subsectorSourcesResponse>(getSubsectorSourcesUrl(subsector,params),
+  const res = await fetch(getSubsectorSourcesUrl(subsector,params),
   {
     ...options,
     method: 'GET'
 
 
   }
-);}
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: subsectorSourcesResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as subsectorSourcesResponse
+}
 
 
 
@@ -960,16 +1011,16 @@ export const getSubsectorSourcesQueryKey = (subsector: string,
 
 
 export const getSubsectorSourcesQueryOptions = <TData = Awaited<ReturnType<typeof subsectorSources>>, TError = unknown>(subsector: string,
-    params: SubsectorSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof subsectorSources>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+    params: SubsectorSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof subsectorSources>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getSubsectorSourcesQueryKey(subsector,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof subsectorSources>>> = ({ signal }) => subsectorSources(subsector,params, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof subsectorSources>>> = ({ signal }) => subsectorSources(subsector,params, { signal, ...fetchOptions });
 
 
 
@@ -990,7 +1041,7 @@ export function useSubsectorSources<TData = Awaited<ReturnType<typeof subsectorS
           TError,
           Awaited<ReturnType<typeof subsectorSources>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useSubsectorSources<TData = Awaited<ReturnType<typeof subsectorSources>>, TError = unknown>(
@@ -1001,18 +1052,18 @@ export function useSubsectorSources<TData = Awaited<ReturnType<typeof subsectorS
           TError,
           Awaited<ReturnType<typeof subsectorSources>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useSubsectorSources<TData = Awaited<ReturnType<typeof subsectorSources>>, TError = unknown>(
  subsector: string,
-    params: SubsectorSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof subsectorSources>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+    params: SubsectorSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof subsectorSources>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useSubsectorSources<TData = Awaited<ReturnType<typeof subsectorSources>>, TError = unknown>(
  subsector: string,
-    params: SubsectorSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof subsectorSources>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+    params: SubsectorSourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof subsectorSources>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -1047,20 +1098,27 @@ export const getSourceOwnershipUrl = (subsector: string,
 
 
 
-  return `/subsectors/${subsector}/sources/${sourceId}/ownership`
+  return `http://localhost:8080/subsectors/${subsector}/sources/${sourceId}/ownership`
 }
 
 export const sourceOwnership = async (subsector: string,
     sourceId: number, options?: RequestInit): Promise<sourceOwnershipResponse> => {
 
-  return customFetch<sourceOwnershipResponse>(getSourceOwnershipUrl(subsector,sourceId),
+  const res = await fetch(getSourceOwnershipUrl(subsector,sourceId),
   {
     ...options,
     method: 'GET'
 
 
   }
-);}
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: sourceOwnershipResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as sourceOwnershipResponse
+}
 
 
 
@@ -1075,16 +1133,16 @@ export const getSourceOwnershipQueryKey = (subsector: string,
 
 
 export const getSourceOwnershipQueryOptions = <TData = Awaited<ReturnType<typeof sourceOwnership>>, TError = unknown>(subsector: string,
-    sourceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sourceOwnership>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+    sourceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sourceOwnership>>, TError, TData>>, fetch?: RequestInit}
 ) => {
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getSourceOwnershipQueryKey(subsector,sourceId);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof sourceOwnership>>> = ({ signal }) => sourceOwnership(subsector,sourceId, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof sourceOwnership>>> = ({ signal }) => sourceOwnership(subsector,sourceId, { signal, ...fetchOptions });
 
 
 
@@ -1105,7 +1163,7 @@ export function useSourceOwnership<TData = Awaited<ReturnType<typeof sourceOwner
           TError,
           Awaited<ReturnType<typeof sourceOwnership>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useSourceOwnership<TData = Awaited<ReturnType<typeof sourceOwnership>>, TError = unknown>(
@@ -1116,18 +1174,18 @@ export function useSourceOwnership<TData = Awaited<ReturnType<typeof sourceOwner
           TError,
           Awaited<ReturnType<typeof sourceOwnership>>
         > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
+      >, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useSourceOwnership<TData = Awaited<ReturnType<typeof sourceOwnership>>, TError = unknown>(
  subsector: string,
-    sourceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sourceOwnership>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+    sourceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sourceOwnership>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useSourceOwnership<TData = Awaited<ReturnType<typeof sourceOwnership>>, TError = unknown>(
  subsector: string,
-    sourceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sourceOwnership>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+    sourceId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof sourceOwnership>>, TError, TData>>, fetch?: RequestInit}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 

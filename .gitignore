@@ -19,7 +19,7 @@ DEU/DATA/
 !.env.example
 
 # Personal Claude Code settings (keep shared launch.json, ignore local grants)
-.claude/settings.local.json
+**/.claude/settings.local.json
 
 # Spark ivy cache (if ever run on host)
 .ivy/
