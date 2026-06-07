@@ -197,6 +197,30 @@ docker compose run --rm --entrypoint "" spark /opt/spark/bin/spark-submit \
 > Java 11). Spark itself is `compileOnly`; only our code + kotlin-stdlib are in
 > the jar, and the Cassandra connector comes via `--packages`.
 
+#### Editing the Spark job interactively
+
+The Spark/Kotlin dependencies aren't installed on the host, so edit inside the
+long-running `spark-dev` container (JDK + Gradle + a warm dependency cache):
+
+```bash
+docker compose up -d spark-dev
+```
+Then in VS Code: **Dev Containers: Attach to Running Container → `/co2-spark-dev`**,
+open `/home/gradle/project`, and install the **Kotlin** extension — you get full
+autocomplete/type-checking because the Spark jars resolve from the shared
+`gradle-cache` volume. Edit → rebuild → submit loop:
+
+```bash
+# inside spark-dev (VS Code terminal): rebuild the jar (or `gradle -t shadowJar`)
+gradle shadowJar
+# from the host: submit it
+docker compose run --rm --entrypoint "" spark /opt/spark/bin/spark-submit \
+  --packages com.datastax.spark:spark-cassandra-connector_2.12:3.5.1 \
+  --conf spark.jars.ivy=/tmp/.ivy --class co2.AnalysisKt /jars/analysis.jar
+```
+`spark-dev` and `spark-build` share the same `gradle-cache`, and the jar lands in
+`spark/kotlin/build/libs/` which the `spark` service mounts at `/jars`.
+
 ### 4. Start the API
 ```bash
 docker compose up -d --build api

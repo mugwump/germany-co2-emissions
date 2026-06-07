@@ -78,6 +78,21 @@ services:
       - gradle-cache:/home/gradle/.gradle
     command: ["gradle", "--no-daemon", "shadowJar"]
 
+  # Long-running dev box for the Kotlin Spark job. Attach VS Code (Dev
+  # Containers: Attach to Running Container) + install the Kotlin extension to
+  # edit with full dependency resolution — the Spark jars come from the shared
+  # gradle-cache volume. Rebuild inside with `gradle shadowJar` (or
+  # `gradle -t shadowJar` for continuous rebuild on save); output lands in
+  # build/libs/analysis.jar, which the `spark` service mounts at /jars.
+  spark-dev:
+    image: gradle:8.7-jdk17
+    container_name: co2-spark-dev
+    working_dir: /home/gradle/project
+    volumes:
+      - ./spark/kotlin:/home/gradle/project
+      - gradle-cache:/home/gradle/.gradle
+    command: ["sleep", "infinity"]
+
   spark:
     image: apache/spark:3.5.3
     container_name: co2-spark
