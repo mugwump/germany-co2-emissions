@@ -161,6 +161,9 @@ Individual stages: `make up`, `make load`, `make analyze`, `make api`, `make web
 `make down` stops everything; `make clean` also wipes the loaded database.
 The manual equivalents are documented step by step below.
 
+Run CQL against the running DB: `make cql` (interactive `cqlsh` on the
+`climate_trace` keyspace) or `make cql-file FILE=queries.cql`.
+
 ## Steps
 
 ### 1. Start Cassandra

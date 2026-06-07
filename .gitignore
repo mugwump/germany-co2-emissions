@@ -21,6 +21,9 @@ DEU/DATA/
 # Personal Claude Code settings (keep shared launch.json, ignore local grants)
 **/.claude/settings.local.json
 
+# Local DB client config (host differs per machine/container)
+**/.cassandraWorkbench.jsonc
+
 # Spark ivy cache (if ever run on host)
 .ivy/
 

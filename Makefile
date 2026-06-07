@@ -12,7 +12,7 @@
 COMPOSE   = docker compose
 CONNECTOR = com.datastax.spark:spark-cassandra-connector_2.12:3.5.1
 
-.PHONY: all up wait-cassandra load load-country load-sources analyze api web ps logs down clean
+.PHONY: all up wait-cassandra load load-country load-sources analyze api web cql cql-file ps logs down clean
 
 all: up load analyze api web ## Bring the whole stack up from scratch
 
@@ -47,6 +47,13 @@ api: ## Build + start the API (http://localhost:8080, Swagger UI at /docs)
 
 web: ## Build + start the dashboard (http://localhost:3000)
 	$(COMPOSE) up -d --build web
+
+cql: ## Open an interactive cqlsh shell on the climate_trace keyspace
+	$(COMPOSE) exec cassandra cqlsh -k climate_trace
+
+cql-file: ## Run a .cql file against climate_trace: make cql-file FILE=queries.cql
+	@test -n "$(FILE)" || { echo "Usage: make cql-file FILE=path/to/file.cql"; exit 1; }
+	$(COMPOSE) exec -T cassandra cqlsh -k climate_trace < $(FILE)
 
 ps: ## Show container status
 	$(COMPOSE) ps
