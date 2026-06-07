@@ -48,7 +48,7 @@ private fun buildSession(): SparkSession {
         .config("spark.cassandra.connection.host", host)
         .config("spark.sql.shuffle.partitions", "8")
         .getOrCreate()
-    spark.sparkContext().setLogLevel("WARN")
+    spark.sparkContext().setLogLevel("WARN") 
     return spark
 }
 
@@ -66,23 +66,23 @@ private fun Dataset<Row>.writeTable(table: String) {
 
 /** CO2 per sector per year (from annual country totals) -> analysis_sector_year. */
 private fun sectorYearStat(spark: SparkSession) {
-    val sectorYear = spark.readTable("country_emissions")
-        .groupBy("iso3_country", "year", "sector")
-        .agg(sum("emissions_quantity").alias("emissions_quantity"))
+    val sectorYear = spark.readTable(Tables.country_emissions)
+        .groupBy(Col.iso3_country, Col.year, Col.sector)
+        .agg(sum(Col.emissions_quantity).alias(Col.emissions_quantity))
 
     println("\n=== National CO2 by sector and year (tonnes) ===")
-    sectorYear.groupBy("year")
-        .agg(sum("emissions_quantity").alias("national_total"))
-        .orderBy("year")
+    sectorYear.groupBy(Col.year)
+        .agg(sum(Col.emissions_quantity).alias("national_total"))
+        .orderBy(Col.year)
         .show(20, false)
 
-    val latestYear = sectorYear.agg(max("year")).first().get(0)
+    val latestYear = sectorYear.agg(max(Col.year)).first().get(0)
     println("=== Top sectors, $latestYear ===")
-    sectorYear.filter(col("year").equalTo(latestYear))
-        .orderBy(desc("emissions_quantity"))
+    sectorYear.filter(col(Col.year).equalTo(latestYear))
+        .orderBy(desc(Col.emissions_quantity))
         .show(20, false)
 
-    sectorYear.writeTable("analysis_sector_year")
+    sectorYear.writeTable(Tables.analysis_sector_year)
     println("-> wrote analysis_sector_year (${sectorYear.count()} rows)")
 }
 
@@ -92,41 +92,41 @@ private fun sectorYearStat(spark: SparkSession) {
  * recomputing the (expensive) group-by over millions of source rows.
  */
 private fun sourceYearStat(spark: SparkSession): Dataset<Row> {
-    val perSourceYear = spark.readTable("emissions_sources")
+    val perSourceYear = spark.readTable(Tables.emissions_sources)
         .select(
-            col("subsector"), col("source_id"), col("source_name"),
-            col("lat"), col("lon"),
-            year(col("start_time")).alias("year"),
-            col("emissions_quantity"),
+            col(Col.subsector), col(Col.source_id), col(Col.source_name),
+            col(Col.lat), col(Col.lon),
+            year(col(Col.start_time)).alias(Col.year),
+            col(Col.emissions_quantity),
         )
-        .groupBy("subsector", "year", "source_id", "source_name", "lat", "lon")
-        .agg(sum("emissions_quantity").alias("emissions_quantity"))
+        .groupBy(Col.subsector, Col.year, Col.source_id, Col.source_name, Col.lat, Col.lon)
+        .agg(sum(Col.emissions_quantity).alias(Col.emissions_quantity))
         .cache()
 
-    perSourceYear.writeTable("analysis_source_year")
+    perSourceYear.writeTable(Tables.analysis_source_year)
     println("-> wrote analysis_source_year (${perSourceYear.count()} rows)")
     return perSourceYear
 }
 
 /** Top-20 emitting facilities per subsector/year -> analysis_top_sources. */
 private fun topSourcesStat(perSourceYear: Dataset<Row>) {
-    val ranked = Window.partitionBy("subsector", "year").orderBy(desc("emissions_quantity"))
+    val ranked = Window.partitionBy(Col.subsector, Col.year).orderBy(desc(Col.emissions_quantity))
     val top = perSourceYear
-        .withColumn("rank", row_number().over(ranked))
-        .filter(col("rank").leq(20))
+        .withColumn(Col.rank, row_number().over(ranked))
+        .filter(col(Col.rank).leq(20))
         .select(
-            col("subsector"), col("year"), col("rank"), col("source_id"),
-            col("source_name"), col("lat"), col("lon"), col("emissions_quantity"),
+            col(Col.subsector), col(Col.year), col(Col.rank), col(Col.source_id),
+            col(Col.source_name), col(Col.lat), col(Col.lon), col(Col.emissions_quantity),
         )
 
-    val latestYear = perSourceYear.agg(max("year")).first().get(0)
+    val latestYear = perSourceYear.agg(max(Col.year)).first().get(0)
     println("=== Top 10 power facilities, $latestYear ===")
     top.filter(
-        col("subsector").equalTo("electricity-generation")
-            .and(col("year").equalTo(latestYear)),
-    ).orderBy("rank").show(10, false)
+        col(Col.subsector).equalTo("electricity-generation")
+            .and(col(Col.year).equalTo(latestYear)),
+    ).orderBy(Col.rank).show(10, false)
 
-    top.writeTable("analysis_top_sources")
+    top.writeTable(Tables.analysis_top_sources)
     println("-> wrote analysis_top_sources (${top.count()} rows)")
 }
 
@@ -139,31 +139,31 @@ private fun topSourcesStat(perSourceYear: Dataset<Row>) {
  * an ownership record are included.
  */
 private fun ownerYearStat(spark: SparkSession, perSourceYear: Dataset<Row>) {
-    val byShare = Window.partitionBy("source_id")
-        .orderBy(coalesce(col("overall_share_percent"), lit(0.0)).desc(), col("parent_name"))
-    val controlling = spark.readTable("emissions_sources_ownership")
-        .filter(col("parent_name").isNotNull())
-        .select(col("source_id"), col("parent_name"), col("overall_share_percent"))
+    val byShare = Window.partitionBy(Col.source_id)
+        .orderBy(coalesce(col(Col.overall_share_percent), lit(0.0)).desc(), col(Col.parent_name))
+    val controlling = spark.readTable(Tables.emissions_sources_ownership)
+        .filter(col(Col.parent_name).isNotNull())
+        .select(col(Col.source_id), col(Col.parent_name), col(Col.overall_share_percent))
         .withColumn("rn", row_number().over(byShare))
         .filter(col("rn").equalTo(1))
-        .select(col("source_id"), col("parent_name").alias("owner"))
+        .select(col(Col.source_id), col(Col.parent_name).alias(Col.owner))
 
     val ownerYear = perSourceYear
-        .join(controlling, "source_id")
-        .groupBy(col("owner"), col("year"))
+        .join(controlling, Col.source_id)
+        .groupBy(col(Col.owner), col(Col.year))
         .agg(
-            sum("emissions_quantity").alias("emissions_quantity"),
-            count("source_id").cast("int").alias("source_count"),
+            sum(Col.emissions_quantity).alias(Col.emissions_quantity),
+            count(Col.source_id).cast("int").alias(Col.source_count),
         )
 
-    val latestYear = ownerYear.agg(max("year")).first().get(0)
+    val latestYear = ownerYear.agg(max(Col.year)).first().get(0)
     println("=== Top 10 owners by CO2, $latestYear ===")
-    ownerYear.filter(col("year").equalTo(latestYear))
-        .orderBy(desc("emissions_quantity"))
+    ownerYear.filter(col(Col.year).equalTo(latestYear))
+        .orderBy(desc(Col.emissions_quantity))
         .show(10, false)
 
-    ownerYear.writeTable("analysis_owner_year")
+    ownerYear.writeTable(Tables.analysis_owner_year)
     // Same rows keyed by owner -> per-company time series (single-partition read).
-    ownerYear.writeTable("analysis_owner_trend")
+    ownerYear.writeTable(Tables.analysis_owner_trend)
     println("-> wrote analysis_owner_year / analysis_owner_trend (${ownerYear.count()} rows)")
 }

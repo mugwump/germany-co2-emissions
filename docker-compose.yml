@@ -75,6 +75,7 @@ services:
     working_dir: /home/gradle/project
     volumes:
       - ./spark/kotlin:/home/gradle/project
+      - ./cassandra:/schema:ro            # schema.cql, for the generateSchema task
       - gradle-cache:/home/gradle/.gradle
     command: ["gradle", "--no-daemon", "shadowJar"]
 
@@ -90,6 +91,7 @@ services:
     working_dir: /home/gradle/project
     volumes:
       - ./spark/kotlin:/home/gradle/project
+      - ./cassandra:/schema:ro            # schema.cql, for the generateSchema task
       - gradle-cache:/home/gradle/.gradle
     command: ["sleep", "infinity"]
 

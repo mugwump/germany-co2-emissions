@@ -221,6 +221,14 @@ docker compose run --rm --entrypoint "" spark /opt/spark/bin/spark-submit \
 `spark-dev` and `spark-build` share the same `gradle-cache`, and the jar lands in
 `spark/kotlin/build/libs/` which the `spark` service mounts at `/jars`.
 
+**Schema-safe column/table names.** Spark's DataFrame API uses *string* table and
+column names that only fail at runtime if mistyped. A `generateSchema` Gradle task
+parses `cassandra/schema.cql` (mounted at `/schema`) into `co2/Schema.kt` —
+`Tables.*` and `Col.*` constants — and runs before `compileKotlin`. The job
+references those constants (e.g. `readTable(Tables.emissions_sources)`,
+`col(Col.emissions_quantity)`), so a typo is a **compile error** with
+autocomplete. Re-run manually with `gradle generateSchema` after a schema change.
+
 ### 4. Start the API
 ```bash
 docker compose up -d --build api
